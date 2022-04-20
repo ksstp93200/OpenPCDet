@@ -4,7 +4,7 @@ import torch.nn as nn
 from .anchor_head_template import AnchorHeadTemplate
 
 
-class AnchorHeadSingle(AnchorHeadTemplate):
+class MultiFrameDenseHead(AnchorHeadTemplate):
     def __init__(self, model_cfg, input_channels, num_class, class_names, grid_size, point_cloud_range,
                  predict_boxes_when_training=True, **kwargs):
         super().__init__(
@@ -47,18 +47,19 @@ class AnchorHeadSingle(AnchorHeadTemplate):
         cls_preds = cls_preds.permute(0, 2, 3, 1).contiguous()  # [N, H, W, C]
         box_preds = box_preds.permute(0, 2, 3, 1).contiguous()  # [N, H, W, C]
 
-        self.forward_ret_dict['cls_preds'] = cls_preds
-        self.forward_ret_dict['box_preds'] = box_preds
+        key_frame_id = data_dict['key_frame_id']
+        self.forward_ret_dict['cls_preds'] = cls_preds[key_frame_id]
+        self.forward_ret_dict['box_preds'] = box_preds[key_frame_id]
 
         if self.conv_dir_cls is not None:
             dir_cls_preds = self.conv_dir_cls(spatial_features_2d)
             dir_cls_preds = dir_cls_preds.permute(0, 2, 3, 1).contiguous()
-            self.forward_ret_dict['dir_cls_preds'] = dir_cls_preds
+            self.forward_ret_dict['dir_cls_preds'] = dir_cls_preds[key_frame_id]
         else:
             dir_cls_preds = None
 
         if self.training:
-            # NMS
+            # label of GT
             targets_dict = self.assign_targets(
                 gt_boxes=data_dict['gt_boxes']
             )
@@ -66,7 +67,7 @@ class AnchorHeadSingle(AnchorHeadTemplate):
 
         if not self.training or self.predict_boxes_when_training:
             batch_cls_preds, batch_box_preds = self.generate_predicted_boxes(
-                batch_size=data_dict['batch_size'],
+                batch_size=data_dict['batch_frame_size'],
                 cls_preds=cls_preds, box_preds=box_preds, dir_cls_preds=dir_cls_preds
             )
             data_dict['batch_cls_preds'] = batch_cls_preds

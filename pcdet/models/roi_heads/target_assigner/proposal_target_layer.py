@@ -73,10 +73,11 @@ class ProposalTargetLayer(nn.Module):
         Returns:
 
         """
-        batch_size = batch_dict['batch_size']
-        rois = batch_dict['rois']
-        roi_scores = batch_dict['roi_scores']
-        roi_labels = batch_dict['roi_labels']
+        key_frame_id = batch_dict.get('key_frame_id', None)
+        batch_size = batch_dict['batch_size'] if not getattr(batch_dict, 'batch_frame_size', None) else batch_dict['batch_frame_size']
+        rois = batch_dict['rois'] if not key_frame_id else batch_dict['rois'][key_frame_id]
+        roi_scores = batch_dict['roi_scores'] if not key_frame_id else batch_dict['roi_scores'][key_frame_id]
+        roi_labels = batch_dict['roi_labels'] if not key_frame_id else batch_dict['roi_labels'][key_frame_id]
         gt_boxes = batch_dict['gt_boxes']
 
         code_size = rois.shape[-1]

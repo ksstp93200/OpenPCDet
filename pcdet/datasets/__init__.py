@@ -10,6 +10,7 @@ from .nuscenes.nuscenes_dataset import NuScenesDataset
 from .waymo.waymo_dataset import WaymoDataset
 from .pandaset.pandaset_dataset import PandasetDataset
 from .lyft.lyft_dataset import LyftDataset
+from .waymo.waymo_dataset import WaymoDatasetMulti
 
 __all__ = {
     'DatasetTemplate': DatasetTemplate,
@@ -17,7 +18,8 @@ __all__ = {
     'NuScenesDataset': NuScenesDataset,
     'WaymoDataset': WaymoDataset,
     'PandasetDataset': PandasetDataset,
-    'LyftDataset': LyftDataset
+    'LyftDataset': LyftDataset,
+    'WaymoDatasetMulti': WaymoDatasetMulti,
 }
 
 
@@ -67,10 +69,17 @@ def build_dataloader(dataset_cfg, class_names, batch_size, dist, root_path=None,
             sampler = DistributedSampler(dataset, world_size, rank, shuffle=False)
     else:
         sampler = None
-    dataloader = DataLoader(
-        dataset, batch_size=batch_size, pin_memory=True, num_workers=workers,
-        shuffle=(sampler is None) and training, collate_fn=dataset.collate_batch,
-        drop_last=False, sampler=sampler, timeout=0
-    )
+    if dataset_cfg.DATASET == 'WaymoDatasetMulti':
+        dataloader = DataLoader(
+            dataset, batch_size=batch_size, pin_memory=True, num_workers=workers,
+            shuffle=(sampler is None) and training, collate_fn=dataset.collate_batch_multi,
+            drop_last=False, sampler=sampler, timeout=0
+        )
+    else:
+        dataloader = DataLoader(
+            dataset, batch_size=batch_size, pin_memory=True, num_workers=workers,
+            shuffle=(sampler is None) and training, collate_fn=dataset.collate_batch,
+            drop_last=False, sampler=sampler, timeout=0
+        )
 
     return dataset, dataloader, sampler

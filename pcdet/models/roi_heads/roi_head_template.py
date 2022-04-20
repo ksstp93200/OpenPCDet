@@ -64,7 +64,7 @@ class RoIHeadTemplate(nn.Module):
         if batch_dict.get('rois', None) is not None:
             return batch_dict
             
-        batch_size = batch_dict['batch_size']
+        batch_size = batch_dict['batch_size'] if not getattr(batch_dict, 'batch_frame_size', None) else batch_dict['batch_frame_size'] 
         batch_box_preds = batch_dict['batch_box_preds']
         batch_cls_preds = batch_dict['batch_cls_preds']
         rois = batch_box_preds.new_zeros((batch_size, nms_config.NMS_POST_MAXSIZE, batch_box_preds.shape[-1]))
@@ -102,7 +102,7 @@ class RoIHeadTemplate(nn.Module):
         return batch_dict
 
     def assign_targets(self, batch_dict):
-        batch_size = batch_dict['batch_size']
+        batch_size = batch_dict['batch_size'] if not getattr(batch_dict, 'batch_frame_size', None) else batch_dict['batch_frame_size']
         with torch.no_grad():
             targets_dict = self.proposal_target_layer.forward(batch_dict)
 
