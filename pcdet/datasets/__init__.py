@@ -10,7 +10,7 @@ from .nuscenes.nuscenes_dataset import NuScenesDataset
 from .waymo.waymo_dataset import WaymoDataset
 from .pandaset.pandaset_dataset import PandasetDataset
 from .lyft.lyft_dataset import LyftDataset
-from .waymo.waymo_dataset import WaymoDatasetMulti
+from .waymo.multiframe_waymo import WaymoDatasetMulti
 
 __all__ = {
     'DatasetTemplate': DatasetTemplate,
