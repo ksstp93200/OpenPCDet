@@ -23,8 +23,8 @@ class MultiFrameROIHead(RoIHeadTemplate):
         self.stage = 3
         
         # attention
-        self.base_num = cfg.MODEL.VID.RPN.REF_POST_NMS_TOP_N
-        self.advanced_num = int(self.base_num * cfg.MODEL.VID.MEGA.RATIO)
+        # self.base_num = cfg.MODEL.VID.RPN.REF_POST_NMS_TOP_N
+        # self.advanced_num = int(self.base_num * cfg.MODEL.VID.MEGA.RATIO)
 
         fcs, Wgs, Wqs, Wks, Wvs, us = [], [], [], [], [], []
 
