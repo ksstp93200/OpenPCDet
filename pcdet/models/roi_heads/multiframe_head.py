@@ -75,7 +75,7 @@ class MultiFrameROIHead(RoIHeadTemplate):
         
         self.init_weights()
     
-    def make_fc(dim_in, hidden_dim):
+    def make_fc(self, dim_in, hidden_dim):
         fc = nn.Linear(dim_in, hidden_dim)
         nn.init.kaiming_uniform_(fc.weight, a=1)
         nn.init.constant_(fc.bias, 0)
