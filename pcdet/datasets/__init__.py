@@ -69,6 +69,7 @@ def build_dataloader(dataset_cfg, class_names, batch_size, dist, root_path=None,
             sampler = DistributedSampler(dataset, world_size, rank, shuffle=False)
     else:
         sampler = None
+    print(dataset_cfg.DATASET)
     if dataset_cfg.DATASET == 'WaymoDatasetMulti':
         dataloader = DataLoader(
             dataset, batch_size=batch_size, pin_memory=True, num_workers=workers,

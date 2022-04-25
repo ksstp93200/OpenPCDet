@@ -391,5 +391,4 @@ class WaymoDatasetMulti(DatasetTemplate):
         )[:-1]
         ret['batch_size'] = batch_size
         ret['batch_frame_size'] = (ret['local_frame_count'] + 1).sum(axis=0)
-        print(ret.keys())
         return ret
