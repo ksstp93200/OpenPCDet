@@ -201,12 +201,12 @@ class WaymoDatasetMulti(DatasetTemplate):
         local_frame_points = []
         for i in local_frame_id:
             local_frame_points.append(self.get_lidar(sequence_name, i))
-            
-        points = np.concatenate([points, *local_frame_points], axis=0)
-        
+
         points_count = np.cumsum(
             [points.shape[0], *[p.shape[0] for p in local_frame_points]],
             axis=-1, dtype=np.int32)
+
+        points = np.concatenate([points, *local_frame_points], axis=0)
 
         input_dict = {
             'points': points,
@@ -306,6 +306,7 @@ class WaymoDatasetMulti(DatasetTemplate):
 
         return data_dict
     
+    @staticmethod
     def collate_batch_multi(batch_list, _unused=False):
         '''
             multi ver new key:
@@ -327,9 +328,9 @@ class WaymoDatasetMulti(DatasetTemplate):
                 elif key in ['points', 'voxel_coords']:
                     coors = []
                     i = 0
-                    for coor in val:
+                    for idx, coor in enumerate(val):
                         if key in ['points']:
-                            coor = np.chunk(coor, data_dict['points_count'], axis=0)
+                            coor = np.split(coor, data_dict['points_count'][idx][:-1], axis=0)
                         for _coor in coor:
                             coor_pad = np.pad(_coor, ((0, 0), (1, 0)), mode='constant', constant_values=i)
                             coors.append(coor_pad)

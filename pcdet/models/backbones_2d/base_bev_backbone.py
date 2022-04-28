@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
+from pynvml import *
 
 
 class BaseBEVBackbone(nn.Module):
@@ -86,27 +87,58 @@ class BaseBEVBackbone(nn.Module):
         Returns:
         """
         spatial_features = data_dict['spatial_features']
-        ups = []
-        ret_dict = {}
-        x = spatial_features
-        for i in range(len(self.blocks)):
-            x = self.blocks[i](x)
+        if spatial_features.shape[0] > 2:
+            feat = []
+            for i, x in enumerate(spatial_features):
+                print(i)
+                x = x.unsqueeze(0)
+                ups = []
+                for i in range(len(self.blocks)):
+                    x = self.blocks[i](x)
+                    if len(self.deblocks) > 0:
+                        ups.append(self.deblocks[i](x))
+                    else:
+                        ups.append(x)
 
-            stride = int(spatial_features.shape[2] / x.shape[2])
-            ret_dict['spatial_features_%dx' % stride] = x
-            if len(self.deblocks) > 0:
-                ups.append(self.deblocks[i](x))
-            else:
-                ups.append(x)
+                if len(ups) > 1:
+                    x = torch.cat(ups, dim=1)
+                elif len(ups) == 1:
+                    x = ups[0]
 
-        if len(ups) > 1:
-            x = torch.cat(ups, dim=1)
-        elif len(ups) == 1:
-            x = ups[0]
+                if len(self.deblocks) > len(self.blocks):
+                    x = self.deblocks[-1](x)
+                del ups
+                torch.cuda.empty_cache()
+                nvmlInit()
+                h = nvmlDeviceGetHandleByIndex(0)
+                info = nvmlDeviceGetMemoryInfo(h)
+                print(f'total    : {info.total}')
+                print(f'free     : {info.free}')
+                print(f'used     : {info.used}')
+                feat.append(x)
+            data_dict['spatial_features_2d'] = torch.cat(feat, dim=0)
+        else:
+            ups = []
+            ret_dict = {}
+            x = spatial_features
+            for i in range(len(self.blocks)):
+                x = self.blocks[i](x)
 
-        if len(self.deblocks) > len(self.blocks):
-            x = self.deblocks[-1](x)
+                stride = int(spatial_features.shape[2] / x.shape[2])
+                ret_dict['spatial_features_%dx' % stride] = x
+                if len(self.deblocks) > 0:
+                    ups.append(self.deblocks[i](x))
+                else:
+                    ups.append(x)
 
-        data_dict['spatial_features_2d'] = x
+            if len(ups) > 1:
+                x = torch.cat(ups, dim=1)
+            elif len(ups) == 1:
+                x = ups[0]
+
+            if len(self.deblocks) > len(self.blocks):
+                x = self.deblocks[-1](x)
+
+            data_dict['spatial_features_2d'] = x
 
         return data_dict

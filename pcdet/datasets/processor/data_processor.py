@@ -173,7 +173,7 @@ class DataProcessor(object):
                 max_num_voxels=config.MAX_NUMBER_OF_VOXELS[self.mode],
             )
 
-        points = np.split(data_dict['points'], data_dict['points_count'], axis=0)
+        points = np.split(data_dict['points'], data_dict['points_count'][:-1], axis=0)
         voxels, coordinates, num_points = [], [], []
         for p in points:
             voxel_output = self.voxel_generator.generate(p)
@@ -185,7 +185,6 @@ class DataProcessor(object):
             num_points.append(_num_points)
 
         
-
         data_dict['voxels'] = voxels
         data_dict['voxel_coords'] = coordinates
         data_dict['voxel_num_points'] = num_points
@@ -253,7 +252,7 @@ class DataProcessor(object):
 
         Returns:
         """
-
+        
         for cur_processor in self.data_processor_queue:
             data_dict = cur_processor(data_dict=data_dict)
 

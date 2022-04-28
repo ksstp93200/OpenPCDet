@@ -8,13 +8,13 @@ DATA_CONFIG:
         -   NAME: mask_points_and_boxes_outside_range
             REMOVE_OUTSIDE_BOXES: True
 
-        -   NAME: shuffle_points
+        -   NAME: shuffle_points_multi
             SHUFFLE_ENABLED: {
                 'train': True,
                 'test': True
             }
 
-        -   NAME: transform_points_to_voxels
+        -   NAME: transform_points_to_voxels_multi
             VOXEL_SIZE: [ 0.32, 0.32, 6.0 ]
             MAX_POINTS_PER_VOXEL: 20
             MAX_NUMBER_OF_VOXELS: {
@@ -24,7 +24,7 @@ DATA_CONFIG:
 
 
 MODEL:
-    NAME: PointPillar
+    NAME: MultiFrame
 
     VFE:
         NAME: PillarVFE
@@ -175,7 +175,7 @@ MODEL:
 
 
 OPTIMIZATION:
-    BATCH_SIZE_PER_GPU: 2
+    BATCH_SIZE_PER_GPU: 1
     NUM_EPOCHS: 30
 
     OPTIMIZER: adam_onecycle

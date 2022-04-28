@@ -1,5 +1,6 @@
 from .detector3d_template import Detector3DTemplate
-
+from pynvml import *
+import torch
 
 class MultiFrame(Detector3DTemplate):
     def __init__(self, model_cfg, num_class, dataset):
@@ -8,8 +9,14 @@ class MultiFrame(Detector3DTemplate):
 
     def forward(self, batch_dict):
         batch_dict['dataset_cfg'] = self.dataset.dataset_cfg
-        for cur_module in self.module_list:
+        for i, cur_module in enumerate(self.module_list):
             batch_dict = cur_module(batch_dict)
+            nvmlInit()
+            h = nvmlDeviceGetHandleByIndex(0)
+            info = nvmlDeviceGetMemoryInfo(h)
+            print(f'total    : {info.total}')
+            print(f'free     : {info.free}')
+            print(f'used     : {info.used}')
 
         if self.training:
             loss, tb_dict, disp_dict = self.get_training_loss()
